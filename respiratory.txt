@@ -1,0 +1,4 @@
+pip install --cache-dir ~/.cache/pip git+https://github.com/yt-dlp/yt-dlp.git
+pip install --cache-dir ~/.cache/pip git+https://github.com/pytgcalls/pytgcalls.git
+pip install --cache-dir ~/.cache/pip git+https://github.com/LonamiWebs/Telethon.git
+pip install --cache-dir ~/.cache/pip git+https://github.com/python-telegram-bot/python-telegram-bot.git
