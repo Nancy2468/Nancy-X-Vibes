@@ -93,10 +93,14 @@ def run():
 Thread(target=run).start()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Start Telethon client
     client.start(bot_token=BOT_TOKEN)
     call_py.start()
 
-    # Run the bot
-    client.loop.run_until_complete(main())
+    # Get existing event loop instead of asyncio.run()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())  # Run the bot inside the active loop
+
+    # Keep the event loop running
+    loop.run_forever()
