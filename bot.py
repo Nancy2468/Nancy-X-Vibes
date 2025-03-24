@@ -101,7 +101,6 @@ if __name__ == "__main__":
         await application.initialize()
         await application.start()
         await application.updater.start_polling()
-        await application.idle()
 
     loop = asyncio.get_event_loop()
 
