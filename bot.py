@@ -39,10 +39,7 @@ app = flask.Flask('')
 # Initialize PyTgCalls
 call_py = PyTgCalls(client)
 
-async def main():
-    # Initialize bot application
-    global application
-    application = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
+application = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
 
 async def start(update, context):
     await update.message.reply_text("Hello! I'm alive.")
@@ -79,12 +76,6 @@ application.run_polling()
     await application.updater.start_polling(stop_signals=None)
     await application.idle()
 
-async def echo(update, context):
-    print(f"Received message: {update.message.text}")  # Debugging print
-
-    await update.message.reply_text(f"You said: {update.message.text}")
-
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 @client.on(events.ChatAction)
 async def handler(event):
     if event.user_added:
@@ -104,10 +95,10 @@ async def stream_end_handler(_: PyTgCalls, update: StreamEnded):
 def home():
     return "I'm alive!"
 
-def run():
-    app.run(host='0.0.0.0', port=8080)
+def run_flask():
+    app.run(host="0.0.0.0", port=5000)
 
-Thread(target=run).start()
+Thread(target=run_flask).start()
 
 
 if __name__ == "__main__":
