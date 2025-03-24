@@ -41,7 +41,7 @@ call_py = PyTgCalls(client)
 
 async def main():
     # Initialize bot application
-    application = Application.builder().token('7598019677:AAFB4Ta5kgGwFI866HcCfX36uXNG5q1Urp0').build()
+    application = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
 
     # Add handlers
     application.add_handler(CommandHandler('start', start))
