@@ -41,7 +41,8 @@ call_py = PyTgCalls(client)
 
 async def main():
     # Initialize bot application
-    global application = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
+    global application
+    application = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
 
 async def start(update, context):
     await update.message.reply_text("Hello! I'm alive.")
