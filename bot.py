@@ -54,7 +54,6 @@ application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 # Run the bot
 application.run_polling()
     # Add handlers
-    application.add_handler(CommandHandler('start', start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, song_request))
     application.add_handler(MessageHandler(filters.Regex(r'(?i)good (morning|night|evening|afternoon)'), greeting_response))
     application.add_handler(CommandHandler('managequeue', manage_queue))
