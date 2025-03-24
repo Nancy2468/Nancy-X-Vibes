@@ -65,8 +65,6 @@ async def main():
     await application.start()
     application.run_polling(stop_signals=None)
 
-if __name__ == "__main__":
-    asyncio.run(main())
 
 @client.on(events.ChatAction)
 async def handler(event):
@@ -98,9 +96,14 @@ if __name__ == "__main__":
     client.start(bot_token=BOT_TOKEN)
     call_py.start()
 
-    # Get existing event loop instead of asyncio.run()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())  # Run the bot inside the active loop
 
-    # Keep the event loop running
+    # Ensure the event loop is running properly
+    try:
+        loop.run_until_complete(main())  # Run the bot inside the active loop
+    except RuntimeError:
+        # If the event loop is already running, use create_task
+        loop.create_task(main())
+
+    # Keep the bot alive
     loop.run_forever()
