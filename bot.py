@@ -43,6 +43,18 @@ async def main():
     # Initialize bot application
     application = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
 
+async def start(update, context):
+    await update.message.reply_text("Hello! I'm alive.")
+
+async def echo(update, context):
+    await update.message.reply_text(update.message.text)
+
+# Adding Handlers
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+
+# Run the bot
+application.run_polling()
     # Add handlers
     application.add_handler(CommandHandler('start', start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, song_request))
