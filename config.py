@@ -1,7 +1,7 @@
 # Configuration file
 
 # Telegram bot token
-BOT_TOKEN = '7598019677:AAFB4Ta5kgGwFI866HcCfX36uXNG5q1Urp0'
+BOT_TOKEN = '8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE'
 
 # Admin user IDs
 ADMIN_IDS = [6973932532, 1338044907]
