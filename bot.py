@@ -50,10 +50,6 @@ async def echo(update, context):
 # Adding Handlers
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
-application.initialize()
-application.start()
-application.updater.start_polling(stop_signals=None)
-application.idle()
 
 # Run the bot
 application.run_polling()
@@ -72,6 +68,11 @@ application.add_handler(CommandHandler('stop', stop))
 application.add_handler(CommandHandler('seek', seek))
 application.add_handler(CommandHandler('setvolume', set_volume))
 application.add_handler(CommandHandler('skip', skip))
+
+application.initialize()
+application.start()
+application.updater.start_polling()
+application.idle()
 
 @client.on(events.ChatAction)
 async def handler(event):
