@@ -51,8 +51,6 @@ async def echo(update, context):
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-# Run the bot
-application.run_polling()
     # Add handlers
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, song_request))
 application.add_handler(MessageHandler(filters.Regex(r'(?i)good (morning|night|evening|afternoon)'), greeting_response))
@@ -68,11 +66,6 @@ application.add_handler(CommandHandler('stop', stop))
 application.add_handler(CommandHandler('seek', seek))
 application.add_handler(CommandHandler('setvolume', set_volume))
 application.add_handler(CommandHandler('skip', skip))
-
-application.initialize()
-application.start()
-application.updater.start_polling()
-application.idle()
 
 @client.on(events.ChatAction)
 async def handler(event):
@@ -103,6 +96,12 @@ if __name__ == "__main__":
     # Start Telethon client
     client.start(bot_token=BOT_TOKEN)
     call_py.start()
+
+    async def main():
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
+        await application.idle()
 
     loop = asyncio.get_event_loop()
 
