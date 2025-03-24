@@ -63,9 +63,15 @@ async def main():
     # Start the bot
     await application.initialize()
     await application.start()
-    application.run_polling(stop_signals=None)
+    await application.updater.start_polling(stop_signals=None)
+    await application.idle()
 
+async def echo(update, context):
+    print(f"Received message: {update.message.text}")  # Debugging print
 
+    await update.message.reply_text(f"You said: {update.message.text}")
+
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 @client.on(events.ChatAction)
 async def handler(event):
     if event.user_added:
