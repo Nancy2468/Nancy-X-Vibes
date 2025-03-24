@@ -50,10 +50,10 @@ async def echo(update, context):
 # Adding Handlers
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
-    await application.initialize()
-    await application.start()
-    await application.updater.start_polling(stop_signals=None)
-    await application.idle()
+application.initialize()
+application.start()
+application.updater.start_polling(stop_signals=None)
+application.idle()
 
 # Run the bot
 application.run_polling()
