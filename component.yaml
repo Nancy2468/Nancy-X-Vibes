@@ -1,0 +1,12 @@
+component:
+  name: Nancys Vibes 
+  type: service
+  source:
+    type: git
+    repository: https://github.com/Nancy2468/Nancy-X-Vibes.git  
+    branch: main  
+  build:
+    language: python
+    version: "3.11"
+  run:
+    command: "python bot.py"  
