@@ -21,8 +21,6 @@ import flask
 from threading import Thread
 import yt_dlp
 import sys
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
 
 # Disable AWS checks dynamically
 def patch_shahid():
@@ -34,17 +32,6 @@ def patch_shahid():
         print("Failed to patch Shahid extractor:", e)
 
 patch_shahid()
-
-# Load credentials from your JSON file
-SERVICE_ACCOUNT_FILE = "nancy-x-vibes-094072aeb691.json"  # Path to your downloaded JSON file
-SCOPES = ["https://www.googleapis.com/auth/drive"]
-
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES
-)
-
-drive_service = build("drive", "v3", credentials=credentials)
-
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
