@@ -35,6 +35,8 @@ API_ID = 24381900
 API_HASH = "b3b605e4006b1ffb1b2f8508a14103fa"
 client = TelegramClient('session_name',  API_ID, API_HASH)       
 app = flask.Flask('')
+os.environ["AWS_ACCESS_KEY"] = "DUMMY"
+os.environ["AWS_SECRET_KEY"] = "DUMMY"
 
 # Initialize PyTgCalls
 call_py = PyTgCalls(client)
