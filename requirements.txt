@@ -4,3 +4,6 @@ git+https://github.com/LonamiWebs/Telethon.git
 git+https://github.com/python-telegram-bot/python-telegram-bot.git
 git+https://github.com/dbader/schedule.git
 git+https://github.com/pallets/flask.git
+pyrogram
+tgcrypto
+ffmpeg
