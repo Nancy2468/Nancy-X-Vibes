@@ -72,6 +72,9 @@ async def download_song(update: Update, context: CallbackContext):
                 'preferredquality': '192',
             }] if format == 'mp3' else []
         }
+        ydl_opts = {"ignoreerrors": True}  # Ignore extractor errors
+with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    ydl.download(["video_url_here"])
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         update.message.reply_text('Song downloaded!')
