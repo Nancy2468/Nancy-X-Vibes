@@ -6,4 +6,4 @@ git+https://github.com/pallets/flask.git
 pyrogram
 tgcrypto
 ffmpeg
-ytdlp
+yt-dlp
