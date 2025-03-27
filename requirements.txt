@@ -6,4 +6,8 @@ git+https://github.com/pallets/flask.git
 pyrogram
 tgcrypto
 ffmpeg
-pip install --no-cache-dir git+https://github.com/yt-dlp/yt-dlp.git
+git+https://github.com/yt-dlp/yt-dlp.git
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+googleapiclient
