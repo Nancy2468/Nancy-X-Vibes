@@ -19,6 +19,19 @@ import asyncio
 import os
 import flask
 from threading import Thread
+import yt_dlp
+import sys
+
+# Disable AWS checks dynamically
+def patch_shahid():
+    try:
+        extractor = yt_dlp.extractor
+        if hasattr(extractor, "Shahid"):
+            extractor.Shahid._aws_execute_api = lambda self, x: None  # Disable AWS calls
+    except Exception as e:
+        print("Failed to patch Shahid extractor:", e)
+
+patch_shahid()
 
 
 # Logging setup
