@@ -6,4 +6,5 @@ git+https://github.com/pallets/flask.git
 pyrogram
 tgcrypto
 ffmpeg
-git+https://github.com/Nancy2468/Nancys-yt-dlp.git
+git+https://github.com/Nancy2468/yt-dlp.git
+
