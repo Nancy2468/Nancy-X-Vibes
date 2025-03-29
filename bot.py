@@ -43,9 +43,6 @@ API_HASH = "b3b605e4006b1ffb1b2f8508a14103fa"
 # Initialize Telegram Client
 client = TelegramClient("bot_session", API_ID, API_HASH)
 
-# Initialize Telegram Client
-client = TelegramClient("bot_session", API_ID, API_HASH)
-
 # Initialize PyTgCalls
 call_py = PyTgCalls(Client)
 
