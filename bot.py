@@ -2,8 +2,6 @@ import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pytgcalls import PyTgCalls
-from telethon.sync import TelegramClient
-from telethon import TelegramClient, events
 from pytgcalls import PyTgCalls
 from pytgcalls import filters as fl
 from pytgcalls.types import Update as TgCallsUpdate
@@ -12,7 +10,6 @@ import schedule
 from config import BOT_TOKEN, ADMIN_IDS, GOOD_MORNING_TIME, GOOD_NIGHT_TIME
 from handlers import start, play_song, pause_song, resume_song, skip_song, show_queue, add_playlist, add_song_to_playlist, remove_song_from_playlist, delete_playlist, help_command, enable_feature, disable_feature, view_playlist, song_playtime
 
-from telegram.ext import CommandHandler
 from scheduler import send_good_morning, send_good_night
 from queue_backup import QueueManager
 from members import MemberManager
@@ -21,7 +18,7 @@ import time
 import asyncio
 import os
 from threading import Thread
-from telegram.ext import Application, MessageHandler, CommandHandler, CallbackContext, filters
+from telegram.ext import Application, MessageHandler, CommandHandler, CallbackContext, filters, ContextTypes
 from telegram import Bot, Update
 import yt_dlp
 
@@ -45,36 +42,44 @@ client = TelegramClient("bot_session", API_ID, API_HASH)
 
 # Initialize PyTgCalls
 call_py = PyTgCalls(Client)
+app = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
+
 
 async def start_pytgcalls():
     await client.start(bot_token=BOT_TOKEN)
     await call_py.start()
     print("✅ PyTgCalls Started Successfully")
 
-async def send_message(update: Update, message: str):
-    if message:
-        await update.message.reply_text(message[:4000])  # ✅ Fixed the async function
-    else:
-        await update.message.reply_text("⚠️ No text provided.")  # ✅ Fixed indentation
 
-app = Application.builder().token(BOT_TOKEN).build()
+# Set your bot owner's Telegram user ID
+BOT_OWNER_ID = 123456789  # Replace with your Telegram user ID
+
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    specific_messages = ["Good Morning", "Good Afternoon", "Good Evening", "Good Night"]
+
+    # Get user and chat details
+    user_id = update.message.from_user.id
+    chat_id = update.message.chat.id
+
+    # Get admin list
+    chat_admins = await context.bot.get_chat_administrators(chat_id)
+    admin_ids = [admin.user.id for admin in chat_admins]
+
+    # Check if user is a bot owner, group owner, or admin
+    if user_id == BOT_OWNER_ID or user_id in admin_ids:
+        if update.message.text.lower() in specific_messages:
+            await update.message.reply_text(update.message.text)
+
 
 # Register command handler
-app.add_handler(CommandHandler("start", send_message))
-
-
-
-app = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
-
-async def start(update, context):
-    await update.message.reply_text("Hello! I'm alive.")
-
 async def echo(update, context):
-    await update.message.reply_text(update.message.text)
+    specific_messages = ["Good Morning", "Good Night", "Good Afternoon", "Good Evening"]
+
+    if update.message.text.lower() in specific_messages:
+        await update.message.reply_text(update.message.text)
 
 # Adding Handlers
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
 # Basic Commands
 app.add_handler(CommandHandler("start", start))
@@ -116,15 +121,15 @@ async def stream_end_handler(_: PyTgCalls, update: StreamEnded):
         await queue_manager.play_next(update.chat_id)
     else:
         print("Received None for update in stream_end_handler")
-
 if __name__ == "__main__":
     async def main():
-        await start_pytgcalls()
+        await start_pytgcalls()  # Ensure this starts PyTgCalls
         await app.initialize()
         await app.start()
-        print("Bot is running...")  
-        await app.stop()  
-    app.run_polling()  # Start polling updates
+        print("Bot is running...")
+        
+        # Keep the bot running indefinitely
+        await asyncio.Future()  # Keeps the event loop alive
 
     try:
         loop = asyncio.get_running_loop()
