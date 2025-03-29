@@ -5,6 +5,8 @@ import yt_dlp
 import os
 from telegram import Update
 from telegram.ext import Application, CallbackContext
+from pytgcalls.types import Update as TgCallsUpdate
+from pytgcalls.types.stream import StreamEnded
 
 app = Application.builder().token('8092275297:AAHgQyldjbOMEfC-16W6Zkp1h3-z7Da3rOE').build()
 # Dictionary for queue management
@@ -41,7 +43,7 @@ async def play_song(update: Update, context: CallbackContext):
         if len(queue[chat_id]) > 1:
             await update.message.reply_text(f"🎵 **Added to queue:** {results[0]['title']}")
         else:
-                await call_py.join_group_call(chat_id, AudioPiped(audio_url))
+                await call_py.join_group_call(chat_id, StreamEnded(audio_url))
                 await update.message.reply_text(f"🎶 **Now Playing:** {results[0]['title']}")
 
     except Exception as e:
