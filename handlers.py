@@ -1,181 +1,63 @@
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped
+from pyrogram import Client, filters from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message from pytgcalls import PyTgCalls from pytgcalls.types.input_stream import AudioPiped import youtube_dl import os import threading import time
 
-# Bot setup
-bot = Client("NancyXBot")
-call = PyTgCalls(bot)
+Initialize bot and PyTgCalls
 
-# Database simulation (Replace with SQLite)
-playlists = {}
+bot = Client("NancyXBot") call = PyTgCalls(bot)
 
-# 🎵 Create a new playlist
-@bot.on_message(filters.command(["ap", "addplaylist"]))
-async def add_playlist(client, message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        return await message.reply("❌ Usage: /ap <playlist_name>")
+Dictionary to store playlists per group
+
+playlists = {} queues = {}
+
+Function to play music in voice chat
+
+def play_music(chat_id, url): if chat_id not in queues: queues[chat_id] = [] queues[chat_id].append(url) if len(queues[chat_id]) == 1:  # If first song, start playing call.join_group_call(chat_id, AudioPiped(url))
+
+Function to delete inline buttons after 3 minutes
+
+def delete_inline_buttons(message: Message): time.sleep(180) message.edit_text("⏳ Inline options expired!")
+
+Command: /start
+
+@bot.on_message(filters.command("start")) def start_command(client, message: Message): if message.chat.type == "private": buttons = InlineKeyboardMarkup([ [InlineKeyboardButton("🎵 Explore Music", callback_data="explore_music")], [InlineKeyboardButton("ℹ Help", callback_data="help_menu")] ]) sent_message = message.reply_photo("start_image.jpg", caption="Welcome to Nancy X Vibes! 🎶\n\nEnjoy unlimited music with a futuristic touch!", reply_markup=buttons) else: sent_message = message.reply_photo("bot_dp.jpg", caption="Hello! I'm Nancy X Vibes. Use /help to see available commands.") threading.Thread(target=delete_inline_buttons, args=(sent_message,)).start()
+
+Command: /play <song_name or URL>
+
+@bot.on_message(filters.command("play")) def play_song(client, message: Message): chat_id = message.chat.id query = " ".join(message.command[1:]) if not query: message.reply_text("Please provide a song name or URL!") return
+
+# Download audio from YouTube
+ydl_opts = {'format': 'bestaudio', 'outtmpl': f'./downloads/{chat_id}.mp3'}
+with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    info = ydl.extract_info(query, download=True)
+    url = ydl.prepare_filename(info)
     
-    name = args[1].strip()
-    if name in playlists:
-        return await message.reply("⚠ Playlist already exists!")
-    
-    playlists[name] = []
-    await message.reply(f"✅ Playlist '{name}' created!")
+play_music(chat_id, url)
+message.reply_text(f"🎵 Playing: {info['title']}")
 
-# 🗑 Remove a playlist
-@bot.on_message(filters.command(["rp", "removeplaylist"]))
-async def remove_playlist(client, message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        return await message.reply("❌ Usage: /rp <playlist_name>")
-    
-    name = args[1].strip()
-    if name in playlists:
-        del playlists[name]
-        await message.reply(f"🗑 Playlist '{name}' removed!")
-    else:
-        await message.reply("⚠ Playlist not found!")
+Command: /stop
 
-# 🎶 Add a song
-@bot.on_message(filters.command(["as", "addsong"]))
-async def add_song(client, message):
-    args = message.text.split(maxsplit=2)
-    if len(args) < 3:
-        return await message.reply("❌ Usage: /as <playlist> <song>")
-    
-    playlist, song = args[1], args[2]
-    if playlist in playlists:
-        playlists[playlist].append(song)
-        await message.reply(f"🎶 Added to '{playlist}'!")
-    else:
-        await message.reply("⚠ Playlist not found!")
+@bot.on_message(filters.command("stop")) def stop_song(client, message: Message): chat_id = message.chat.id call.leave_group_call(chat_id) queues[chat_id] = [] message.reply_text("⏹ Music stopped!")
 
-# ❌ Remove a song
-@bot.on_message(filters.command(["rs", "removesong"]))
-async def remove_song(client, message):
-    args = message.text.split(maxsplit=2)
-    if len(args) < 3:
-        return await message.reply("❌ Usage: /rs <playlist> <song>")
-    
-    playlist, song = args[1], args[2]
-    if playlist in playlists and song in playlists[playlist]:
-        playlists[playlist].remove(song)
-        await message.reply(f"🗑 Removed from '{playlist}'!")
-    else:
-        await message.reply("⚠ Song or playlist not found!")
+Command: /skip
 
-# 📂 Show playlist (10 songs per page)
-@bot.on_message(filters.command(["pl", "playlist"]))
-async def show_playlist(client, message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        return await message.reply("❌ Usage: /pl <playlist_name>")
-    
-    name = args[1].strip()
-    if name not in playlists or not playlists[name]:
-        return await message.reply("⚠ Playlist is empty or doesn't exist!")
+@bot.on_message(filters.command("skip")) def skip_song(client, message: Message): chat_id = message.chat.id if chat_id in queues and len(queues[chat_id]) > 1: queues[chat_id].pop(0) next_song = queues[chat_id][0] call.change_stream(chat_id, AudioPiped(next_song)) message.reply_text("⏭ Skipping song!") else: call.leave_group_call(chat_id) queues[chat_id] = [] message.reply_text("✅ Queue finished, leaving call!")
 
-    songs = playlists[name]
-    text = f"🎵 **Playlist: {name}**\n\n" + "\n".join([f"🎶 {i+1}. {s}" for i, s in enumerate(songs[:10])])
+Playlist Management Commands
 
-    await message.reply(text)
+@bot.on_message(filters.command("addplaylist")) def add_playlist(client, message: Message): chat_id = message.chat.id name = " ".join(message.command[1:]) if not name: message.reply_text("Please provide a playlist name!") return if chat_id not in playlists: playlists[chat_id] = {} playlists[chat_id][name] = [] message.reply_text(f"Playlist '{name}' created!")
 
-# ▶ Play a song
-@bot.on_message(filters.command("play"))
-async def play_from_playlist(client, message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        return await message.reply("❌ Usage: /play <playlist_name>")
-    
-    name = args[1].strip()
-    if name not in playlists or not playlists[name]:
-        return await message.reply("⚠ Playlist is empty or doesn't exist!")
+@bot.on_message(filters.command("playlist")) def show_playlists(client, message: Message): chat_id = message.chat.id if chat_id not in playlists or not playlists[chat_id]: message.reply_text("No playlists available!") return buttons = [[InlineKeyboardButton(name, callback_data=f"playlist_{name}")] for name in playlists[chat_id]] sent_message = message.reply_text("🎶 Playlists:", reply_markup=InlineKeyboardMarkup(buttons)) threading.Thread(target=delete_inline_buttons, args=(sent_message,)).start()
 
-    chat_id = message.chat.id
-    song = playlists[name][0]  # Play first song
+Command: /help
 
-    await call.join_group_call(chat_id, AudioPiped(song))
-    await message.reply(f"🎶 Playing {song} from '{name}'!")
+@bot.on_message(filters.command("help")) def send_help(client, message: Message): buttons = InlineKeyboardMarkup([ [InlineKeyboardButton("🎶 Music Commands", callback_data="music_help")], [InlineKeyboardButton("🔧 Admin Commands", callback_data="admin_help")] ]) sent_message = message.reply_text("Here are my commands! Click the buttons below for more info.", reply_markup=buttons) threading.Thread(target=delete_inline_buttons, args=(sent_message,)).start()
 
-# ⏸ Pause, Resume, Skip, Stop
-@bot.on_message(filters.command("pause"))
-async def pause_music(client, message):
-    await call.pause_stream(message.chat.id)
-    await message.reply("⏸ Music Paused!")
+Command: /Nancy <question>
 
-@bot.on_message(filters.command("resume"))
-async def resume_music(client, message):
-    await call.resume_stream(message.chat.id)
-    await message.reply("▶ Resumed Music!")
+@bot.on_message(filters.regex(r'^/Nancy (.+)')) def ask_chatgpt(client, message: Message): query = message.matches[0].group(1) response = f"🔮 Searching for: {query}\nAnswer: ChatGPT response here..." message.reply_text(response)
 
-@bot.on_message(filters.command("skip"))
-async def skip_music(client, message):
-    await call.leave_group_call(message.chat.id)
-    await message.reply("⏭ Skipped!")
+Start bot and PyTgCalls
 
-@bot.on_message(filters.command("stop"))
-async def stop_music(client, message):
-    await call.leave_group_call(message.chat.id)
-    await message.reply("🛑 Stopped Music!")
+bot.start() call.start()
 
-# 📥 Download MP3/MP4
-@bot.on_message(filters.command("downloadmp3"))
-async def download_mp3(client, message):
-    await message.reply("🎵 Downloading MP3...")
+print("NancyXBot is running!") bot.idle()
 
-@bot.on_message(filters.command("downloadmp4"))
-async def download_mp4(client, message):
-    await message.reply("📽 Downloading MP4...")
-
-# 🆘 Help Command (Different for Users & Admins, Sent in DM)
-@bot.on_message(filters.command("help"))
-async def help_command(client, message):
-    user_id = message.from_user.id
-    chat_id = message.chat.id
-
-    # Check if user is an admin
-    admins = [admin.user.id for admin in await client.get_chat_members(chat_id, filter="administrators")]
-    is_admin = user_id in admins
-
-    if is_admin:
-        help_text = (
-            "**🔹 Admin Commands:**\n"
-            "/play <playlist> - Play song\n"
-            "/pause - Pause\n"
-            "/resume - Resume\n"
-            "/skip - Skip\n"
-            "/stop - Stop music\n"
-            "/queue - View queue\n\n"
-            "/ap <name> - Add Playlist\n"
-            "/rp <name> - Remove Playlist\n"
-            "/as <playlist> <song> - Add Song\n"
-            "/rs <playlist> <song> - Remove Song\n"
-            "/pl <playlist> - Show Playlist\n\n"
-            "/enable <feature> - Enable Feature\n"
-            "/disable <feature> - Disable Feature\n"
-        )
-    else:
-        help_text = (
-            "**🔹 User Commands:**\n"
-            "/play <playlist> - Play Song\n"
-            "/pause - Pause\n"
-            "/resume - Resume\n"
-            "/skip - Skip\n"
-            "/stop - Stop\n"
-            "/queue - Show Queue\n\n"
-            "/pl <playlist> - View Playlist\n"
-            "/downloadmp3 <url> - Download MP3\n"
-            "/downloadmp4 <url> - Download MP4\n"
-        )
-
-    # Send help in private DM
-    try:
-        await client.send_message(user_id, help_text)
-        await message.reply("📩 **Check your DM for help!**")
-    except:
-        await message.reply("❌ **Unable to send DM. Please enable private messages!**")
-
-# Start Bot
-bot.run()
